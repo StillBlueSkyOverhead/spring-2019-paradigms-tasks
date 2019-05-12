@@ -9,10 +9,10 @@ main = defaultMain testsRobots
 testsRobots :: TestTree
 testsRobots = let
         walter = robot "Walter" 50 50
-        karasek = robot "Beep" 50 67
-        karasik = robot "Wryy" 17 150
+        beep = robot "Beep" 50 67
+        wryy = robot "Wryy" 17 150
         glassCannon = robot "GC" 100 5
-        deadbot = robot "DED" 5 0
+        deadBot = robot "DEAD" 5 0
         tank = robot "TANK" 5 100
         
     in testGroup "Unit tests for Robots task"
@@ -20,7 +20,7 @@ testsRobots = let
             getName walter @?= "Walter"
 
         , testCase "Test for getAttack" $
-            getAttack walter @?= 50
+            getAttack tank @?= 5
 
         , testCase "Test for getHealth" $
             getHealth walter @?= 50
@@ -44,28 +44,28 @@ testsRobots = let
             isAlive walter @?= True
 
         , testCase "isAlive works on dead robot" $
-            isAlive deadbot @?= False
+            isAlive deadBot @?= False
 
         , testCase "Alive robot fights" $
-            (getHealth $ fight walter karasek) @?= 17
+            (getHealth $ fight walter beep) @?= 17
 
         , testCase "Dead robot fights" $
-            (getHealth $ fight deadbot karasek) @?= 67
+            (getHealth $ fight deadBot beep) @?= 67
 
         , testCase "Attacker knockouts defender in first round" $
-            threeRoundFight glassCannon karasek @?= ("GC", 100, 5)
+            threeRoundFight glassCannon beep @?= ("GC", 100, 5)
 
         , testCase "Defender knockouts attacker in second round" $
-            threeRoundFight walter karasek @?= ("Beep", 50, 17)
+            threeRoundFight walter beep @?= ("Beep", 50, 17)
 
         , testCase "Attacker wins, took 1 hit" $
-            threeRoundFight karasek tank @?= ("Beep", 50, 62)
+            threeRoundFight beep tank @?= ("Beep", 50, 62)
 
         , testCase "Defender wins, took 2 hits" $
-            threeRoundFight tank karasek @?= ("Beep", 50, 57)
+            threeRoundFight tank beep @?= ("Beep", 50, 57)
 
         , testCase "Attacker wins, equal hp" $
-            threeRoundFight karasek karasik @?= ("Beep", 50, 50)
+            threeRoundFight beep wryy @?= ("Beep", 50, 50)
 
         , testCase "Test for neueRobotAttack" $
             (getHealth $ neueRobotAttack tank) @?= 91

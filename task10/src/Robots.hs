@@ -8,10 +8,10 @@ module Robots where
 -- Разумно думать, что уровни жизни и атаки -- это неотрицательные целые числа
 
 -- это просто псевдонимы для типов(красоты ради)
-type Name = String
+type Name   = String
 type Attack = Int
 type Health = Int
-type Robot = (Name, Attack, Health)
+type Robot  = (Name, Attack, Health)
 
 -- Напишем конструктор для робота
 robot :: Name -> Attack -> Health -> Robot
@@ -51,13 +51,19 @@ setHealth newHealth (name, attack, _) = (name, attack, newHealth)
 -- > "Marvin, attack: 100, health: 500"
 
 printRobot :: Robot -> String
-printRobot (name, attack, hp) = name ++ ", attack: " ++ show attack ++ ", health: " ++ show hp
+printRobot bot = name ++ 
+                   ", attack: " ++ show attack ++
+                   ", health: " ++ show health 
+    where
+        name   = getName bot
+        attack = getAttack bot
+        health = getHealth bot
 
 -- Давайте теперь научим роботов драться друг с другом
 -- Напишем функцию damage которая причиняет роботу урон
 damage :: Robot -> Int -> Robot
 damage victim amount = let
-        health = getHealth victim
+        health    = getHealth victim
         newHealth = health - amount
     in setHealth newHealth victim
 
@@ -65,7 +71,7 @@ damage victim amount = let
 -- Вам понадобится вспомогательная функция isAlive, которая бы проверяла, жив робот или не очень
 -- Робот считается живым, если его уровень здоровья строго больше нуля.
 isAlive :: Robot -> Bool
-isAlive a = getHealth a > 0
+isAlive = (> 0) . getHealth
 
 -- Затем, используя функцию damage, напишите функцию, которая моделирует один раунд схватки между
 -- двумя роботами
@@ -76,20 +82,9 @@ isAlive a = getHealth a > 0
 -- Обратите внимание, что неживой робот не может атаковать. В этом случае нужно просто
 -- вернуть второго робота, как будто ничего и не было
 fight :: Robot -> Robot -> Robot
-fight attacker defender | isAlive attacker = setHealth (getHealth defender - getAttack attacker) defender
-                        | otherwise = defender
+fight attacker defender | isAlive attacker = damage defender (getAttack attacker)
+                        | otherwise        = defender
 
--- На основе fight напишем функцию multiRoundFight, моделирующую многораундовый поединок
--- и возвращающую обеих роботов с измененным значением здоровья
-multiRoundFight :: Int -> Robot -> Robot -> (Robot, Robot)
-multiRoundFight 0 attacker defender = (attacker, defender)
-multiRoundFight n attacker defender = let (a, b) = multiRoundFight (n - 1) (fight attacker defender) attacker in (b, a)
-
--- Вспомогательная функция, возвращающая наиболее здорового робота из двух
-maxByHealth :: Robot -> Robot -> Robot
-maxByHealth a b = if getHealth a >= getHealth b
-                  then a
-                  else b
 -- Наконец, напишите функцию, которая бы моделировала три раунда схватки между
 -- двумя роботами и возвращала бы победителя. Схватка происходит следующим образом:
 -- 1. Атакующий робот ударяет защищающегося, как в предыдущей функции
@@ -100,16 +95,22 @@ maxByHealth a b = if getHealth a >= getHealth b
 -- Если же так вышло, что после трех раундов у обоих роботов одинаковый уровень жизни, то
 -- победителем считается тот, кто ударял первым(то есть атакующий робот)
 threeRoundFight :: Robot -> Robot -> Robot
-threeRoundFight attacker defender = let (a, b) = multiRoundFight 3 attacker defender in maxByHealth a b
+threeRoundFight attacker defender = let
+        defender'  = fight attacker defender
+        attacker'  = fight defender' attacker
+        defender'' = fight attacker' defender'
+    in if getHealth attacker' >= getHealth defender''
+        then attacker'
+        else defender''
 
 -- Шаг 4.
 -- Создайте список из трех роботов(Абсолютно любых, но лучше живых, мы собираемся их побить)
 roboter :: [Robot]
-roboter = [robot "Anton" 466 388, robot "Semyon" 88 228, robot "Nikita" 239 111]
+roboter = [robot "Karasek" 5 5, robot "Strelizia" 1 10, robot "Barbatos" 6 9]
 
 -- Затем создайте четвертого
 neueRobot :: Robot
-neueRobot = robot "yeputons" 455 165
+neueRobot = robot "Eva-01" 9 10
 
 -- Используя частичное применение напишите функцию, которая бы принимала на вход робота
 -- и атаковала бы его роботом neueRobot
@@ -119,4 +120,4 @@ neueRobotAttak  = fight neueRobot
 -- Наконец, используя filter определите, кто из роботов, которых вы положили в список roboter,
 -- выживет, если neueRobot сразится с ним в одном раунде.
 survivors :: [Robot]
-survivors = filter (isAlive . neueRobotAttak) roboter
+survivors = filter isAlive $ map neueRobotAttak roboter
