@@ -35,8 +35,8 @@ testsBasics = testGroup "Unit tests for Basics tasks"
     , testCase "take' takes 3 elements from 10-element list" $
         take' 3 [1..10] @?= [1,2,3]
 
-    , testCase "take' 3 takes all elements from 2-element list" $
-        take' 3 [1,2] @?= [1,2]
+    , testCase "take' 2 takes all elements from 2-element list" $
+        take' 2 [1,2] @?= [1,2]
 
     , testCase "take' takes 3 elements from infinite list" $
         take' 3 [1..] @?= [1,2,3]
@@ -45,7 +45,7 @@ testsBasics = testGroup "Unit tests for Basics tasks"
         take' 0 [1,2,3] @?= []
 
     , testCase "take' works on empty list" $
-        take' 10 ([] :: [Int]) @?= []
+        take' 0 ([] :: [Int]) @?= []
 
     , testCase "drop' drops 1 element from 3-element list" $
         drop' 1 [1,2,3] @?= [2,3]
@@ -71,7 +71,7 @@ testsBasics = testGroup "Unit tests for Basics tasks"
     , testCase "foldl'' can be used for finding sum of elements" $
         foldl'' (+) 0 [1,2,3] @?= 6
 
-	, testCase "foldl'' works for non-associative operation" $
+    , testCase "foldl'' works for non-associative operation" $
 		foldl'' (-) 3 [2, 1] @?= 0
 
     , testCase "concat' works on finite lists as expected" $

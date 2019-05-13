@@ -68,7 +68,7 @@ testsRobots = let
             threeRoundFight beep wryy @?= ("Beep", 50, 50)
 
         , testCase "Test for neueRobotAttack" $
-            (getHealth $ neueRobotAttack tank) @?= 91
+            (getHealth $ neueRobotAttak tank) @?= 91
             
         , testCase "Test for survivors" $
             survivors @?= [robot "Strelizia" 1 1]
