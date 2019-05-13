@@ -94,14 +94,16 @@ fight attacker defender | isAlive attacker = damage defender (getAttack attacker
 -- Победитель определеяется как робот, у которого уровень здоровья строго больше, чем у сопереника
 -- Если же так вышло, что после трех раундов у обоих роботов одинаковый уровень жизни, то
 -- победителем считается тот, кто ударял первым(то есть атакующий робот)
+getWinner :: (Robot, Robot) -> Robot
+getWinner (attacker, defender) | getHealth attacker >= getHealth defender = attacker
+                               | otherwise                                = defender
+
 threeRoundFight :: Robot -> Robot -> Robot
 threeRoundFight attacker defender = let
         defender'  = fight attacker defender
         attacker'  = fight defender' attacker
         defender'' = fight attacker' defender'
-    in if getHealth attacker' >= getHealth defender''
-        then attacker'
-        else defender''
+	in getWinner attacker' defender''
 
 -- Шаг 4.
 -- Создайте список из трех роботов(Абсолютно любых, но лучше живых, мы собираемся их побить)
