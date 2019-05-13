@@ -71,10 +71,10 @@ testsBasics = testGroup "Unit tests for Basics tasks"
     , testCase "foldl'' can be used for finding sum of elements" $
         foldl'' (+) 0 [1,2,3] @?= 6
 
-    , testCase "foldl'' works for non-associative operation 1" $
-		foldl'' (-) 3 [2,1] @?= 0
+    , testCase "foldl'' works for non-associative operation" $
+		foldl'' (\a b -> 2 * a + b) 0 [1,2,3] @?= 11
 
-    , testCase "foldl'' works for non-associative operation 2" $
+    , testCase "foldl'' works for non-commutative operation" $
 		foldl'' (concat') [3] [[2],[1]] @?= [3,2,1]
 
     , testCase "concat' works on finite lists as expected" $
