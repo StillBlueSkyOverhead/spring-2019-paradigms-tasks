@@ -103,7 +103,7 @@ threeRoundFight attacker defender = let
         defender'  = fight attacker defender
         attacker'  = fight defender' attacker
         defender'' = fight attacker' defender'
-	in getWinner attacker' defender''
+    in getWinner attacker' defender''
 
 -- Шаг 4.
 -- Создайте список из трех роботов(Абсолютно любых, но лучше живых, мы собираемся их побить)
