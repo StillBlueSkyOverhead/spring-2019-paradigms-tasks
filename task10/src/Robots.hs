@@ -8,14 +8,14 @@ module Robots where
 -- Разумно думать, что уровни жизни и атаки -- это неотрицательные целые числа
 
 -- это просто псевдонимы для типов(красоты ради)
-type Name   = String
+type Name = String
 type Attack = Int
 type Health = Int
-type Robot  = (Name, Attack, Health)
+type Robot = (Name, Attack, Health)
 
 -- Напишем конструктор для робота
 robot :: Name -> Attack -> Health -> Robot
-robot name attack hp  = (name, attack, hp)
+robot name attack hp = (name, attack, hp)
 
 -- У объектов есть геттеры или аксессоры -- функции, которые
 -- позволяют нам получить доступ к состоянию объекта
@@ -115,7 +115,7 @@ neueRobot = robot "Eva-01" 9 10
 -- Используя частичное применение напишите функцию, которая бы принимала на вход робота
 -- и атаковала бы его роботом neueRobot
 neueRobotAttak :: Robot -> Robot
-neueRobotAttak  = fight neueRobot
+neueRobotAttak = fight neueRobot
 
 -- Наконец, используя filter определите, кто из роботов, которых вы положили в список roboter,
 -- выживет, если neueRobot сразится с ним в одном раунде (neueRobot атакует).
