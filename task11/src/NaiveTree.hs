@@ -56,7 +56,7 @@ instance Map NaiveTree where
         | k' < k    = Node k a (alter f k' l) r
         | k' > k    = Node k a l (alter f k' r)
         | otherwise =
-            in merge l $ maybe r (flip merge r . singleton k) (f $ Just a)
+            merge l $ maybe r (flip merge r . singleton k) (f $ Just a)
 
     lookup _ Nil = Nothing
     lookup k' (Node k a l r)
