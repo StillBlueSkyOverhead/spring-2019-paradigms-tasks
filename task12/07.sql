@@ -4,4 +4,11 @@
 -- то ее городское население считается равным 0 (будьте внимательны, при этом
 -- население страны тоже может быть равным 0, в этом случае выводить такую
 -- страну не нужно). (0,5 баллов)
-SELECT * FROM Country;
+SELECT Country.Name
+    FROM Country
+    JOIN (
+        SELECT CountryCode, SUM(Population) AS InCity
+        FROM City
+        GROUP BY CountryCode
+    ) ON Code = CountryCode AND 2 * InCity < Country.Population
+    ORDER BY Country.Name DESC;
