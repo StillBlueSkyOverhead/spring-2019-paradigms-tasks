@@ -2,6 +2,6 @@
 -- (0,5 баллов)
 SELECT City.Name
     FROM Country
-    JOIN Capital ON Code = Capital.CountryCode
-    JOIN City ON CityId = Id
+    JOIN Capital ON Country.Code = Capital.CountryCode
+    JOIN City ON Capital.CityId = City.Id
     WHERE Country.Name = "Malaysia";
