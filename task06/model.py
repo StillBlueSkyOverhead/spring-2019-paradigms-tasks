@@ -4,7 +4,19 @@ import abc
 
 class Scope:
     def __init__(self, parent=None):
-        raise NotImplementedError
+        self.parent = parent
+        self.var_dict = {}
+
+    def __getitem__(self, key):
+        if key in self.var_dict:
+            return self.var_dict[key]
+        elif self.parent:
+            return self.parent[key]
+        else:
+            raise KeyError(key)
+
+    def __setitem__(self, key, value):
+        self.var_dict[key] = value
 
 
 class ASTNode(metaclass=abc.ABCMeta):
@@ -29,11 +41,18 @@ class Number(ASTNode):
     быть можно положить в словарь в качестве ключа (см. специальные методы
     __eq__, __ne__, __hash__ — требуется реализовать две из них).
     """
+
     def __init__(self, value):
-        pass
+        self.value = value
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        return self
+
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __hash__(self):
+        return hash(self.value)
 
 
 class Function(ASTNode):
@@ -47,11 +66,13 @@ class Function(ASTNode):
 
     Аналогично Number, метод evaluate должен возвращать self.
     """
+
     def __init__(self, args, body):
-        pass
+        self.args = args
+        self.body = body
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        return self
 
 
 class FunctionDefinition(ASTNode):
@@ -63,11 +84,14 @@ class FunctionDefinition(ASTNode):
     обновление текущего Scope,  т.е. в него добавляется новое значение типа
     Function под заданным именем, а возвращать evaluate должен саму функцию.
     """
+
     def __init__(self, name, function):
-        pass
+        self.name = name
+        self.function = function
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        scope[self.name] = self.function
+        return self.function
 
 
 class Conditional(ASTNode):
@@ -87,11 +111,19 @@ class Conditional(ASTNode):
     Если соответствующий список пуст или равен None, то возвращаемое значение
     остается на ваше усмотрение.
     """
+
     def __init__(self, condition, if_true, if_false=None):
-        pass
+        self.condition = condition
+        self.if_true = if_true or []
+        self.if_false = if_false or []
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        body = self.if_true if self.condition.evaluate(scope).value \
+            else self.if_false
+        res = None
+        for expr in body:
+            res = expr.evaluate(scope)
+        return res
 
 
 class Print(ASTNode):
@@ -108,11 +140,14 @@ class Print(ASTNode):
     Возвращаемое значение метода evаluate - объект типа Number, который был
     выведен.
     """
+
     def __init__(self, expr):
-        pass
+        self.expr = expr
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        res = self.expr.evaluate(scope)
+        print(res.value)
+        return res
 
 
 class Read(ASTNode):
@@ -128,11 +163,14 @@ class Read(ASTNode):
     Каждое входное число располагается на отдельной строке (никаких пустых
     строк и лишних символов не будет).
     """
+
     def __init__(self, name):
-        pass
+        self.name = name
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        num = Number(int(input()))
+        scope[self.name] = num
+        return num
 
 
 class FunctionCall(ASTNode):
@@ -159,11 +197,20 @@ class FunctionCall(ASTNode):
     метода evaluate. Если результат вычисления последнего выражения
     неопределён, то возвращаемое значение остаётся на ваше усмотрение.
     """
+
     def __init__(self, fun_expr, args):
-        pass
+        self.fun_expr = fun_expr
+        self.args = args
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        function = self.fun_expr.evaluate(scope)
+        call_scope = Scope(scope)
+        for name, expr in zip(function.args, self.args):
+            call_scope[name] = expr.evaluate(scope)
+        res = None
+        for expr in function.body:
+            res = expr.evaluate(call_scope)
+        return res
 
 
 class Reference(ASTNode):
@@ -172,11 +219,12 @@ class Reference(ASTNode):
     Метод evaluate должен найти в scope объект с именем name и вернуть его
     (см. подробнее про класс Scope).
     """
+
     def __init__(self, name):
-        pass
+        self.name = name
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        return scope[self.name]
 
 
 class BinaryOperation(ASTNode):
@@ -199,11 +247,32 @@ class BinaryOperation(ASTNode):
     Гарантируется, что lhs и rhs при вычислении дадут объект типа Number,
     т.е. не может получиться так, что вам придется сравнивать две функции.
     """
+    OP_TO_FUN = {'+': lambda a, b: a + b,
+                 '-': lambda a, b: a - b,
+                 '*': lambda a, b: a * b,
+                 '/': lambda a, b: a // b,
+                 '%': lambda a, b: a % b,
+                 '==': lambda a, b: a == b,
+                 '!=': lambda a, b: a != b,
+                 '<': lambda a, b: a < b,
+                 '>': lambda a, b: a > b,
+                 '<=': lambda a, b: a <= b,
+                 '>=': lambda a, b: a >= b,
+                 '&&': lambda a, b: a and b,
+                 '||': lambda a, b: a or b}
+
     def __init__(self, lhs, op, rhs):
-        pass
+        if op not in BinaryOperation.OP_TO_FUN:
+            raise KeyError(op)
+        self.lhs = lhs
+        self.op = op
+        self.rhs = rhs
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        return Number(int(BinaryOperation.OP_TO_FUN[self.op](
+            self.lhs.evaluate(scope).value,
+            self.rhs.evaluate(scope).value
+        )))
 
 
 class UnaryOperation(ASTNode):
@@ -217,8 +286,15 @@ class UnaryOperation(ASTNode):
     Как и для BinaryOperation, Number, хранящий 0, считаем за False, а все
     остальные за True.
     """
+    OP_TO_FUN = {'-': lambda a: -a,
+                 '!': lambda a: not a}
+
     def __init__(self, op, expr):
-        pass
+        if op not in UnaryOperation.OP_TO_FUN:
+            raise KeyError(op)
+        self.op = op
+        self.expr = expr
 
     def evaluate(self, scope):
-        raise NotImplementedError
+        return Number(int(UnaryOperation.OP_TO_FUN[self.op](
+            self.expr.evaluate(scope).value)))
